@@ -1,0 +1,7 @@
+C:\Users\Jesse\source\repos\Archaic\Archaic\bin\Release\Archaic.exe.config
+C:\Users\Jesse\source\repos\Archaic\Archaic\bin\Release\Archaic.exe
+C:\Users\Jesse\source\repos\Archaic\Archaic\bin\Release\Archaic.pdb
+C:\Users\Jesse\source\repos\Archaic\Archaic\obj\Release\Archaic.csproj.CoreCompileInputs.cache
+C:\Users\Jesse\source\repos\Archaic\Archaic\obj\Release\Archaic.exe
+C:\Users\Jesse\source\repos\Archaic\Archaic\obj\Release\Archaic.pdb
+C:\Users\Jesse\source\repos\Archaic\Archaic\obj\Release\Archaic.csprojAssemblyReference.cache
