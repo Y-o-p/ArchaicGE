@@ -87,10 +87,26 @@ namespace Archaic
 			219
 		};
 
-		public static byte get_brightness(int index)
+        private static byte[] m_brightness_numbered =
+        {
+            (byte)'0',
+            (byte)'1',
+            (byte)'2',
+            (byte)'3',
+            (byte)'4',
+            (byte)'5',
+            (byte)'6',
+            (byte)'7',
+            (byte)'8',
+            (byte)'9'
+        };
+
+
+        public static byte get_brightness(int index)
 		{
-			return m_brightness[(int)clamp(index, 0, m_brightness.Length - 1)];
-		}
+            //return m_brightness[(int)clamp(index, 0, m_brightness.Length - 1)];
+            return m_brightness_numbered[(int)clamp(index, 0, m_brightness_numbered.Length - 1)];
+        }
 
 		public static int get_max_brightness()
 		{

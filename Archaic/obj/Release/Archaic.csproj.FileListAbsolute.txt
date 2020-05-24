@@ -5,3 +5,10 @@ C:\Users\Jesse\source\repos\Archaic\Archaic\obj\Release\Archaic.csproj.CoreCompi
 C:\Users\Jesse\source\repos\Archaic\Archaic\obj\Release\Archaic.exe
 C:\Users\Jesse\source\repos\Archaic\Archaic\obj\Release\Archaic.pdb
 C:\Users\Jesse\source\repos\Archaic\Archaic\obj\Release\Archaic.csprojAssemblyReference.cache
+C:\Users\Jesse\Documents\cs_projects\ArchaicGE\Archaic\bin\Release\Archaic.exe.config
+C:\Users\Jesse\Documents\cs_projects\ArchaicGE\Archaic\bin\Release\Archaic.exe
+C:\Users\Jesse\Documents\cs_projects\ArchaicGE\Archaic\bin\Release\Archaic.pdb
+C:\Users\Jesse\Documents\cs_projects\ArchaicGE\Archaic\obj\Release\Archaic.csprojAssemblyReference.cache
+C:\Users\Jesse\Documents\cs_projects\ArchaicGE\Archaic\obj\Release\Archaic.csproj.CoreCompileInputs.cache
+C:\Users\Jesse\Documents\cs_projects\ArchaicGE\Archaic\obj\Release\Archaic.exe
+C:\Users\Jesse\Documents\cs_projects\ArchaicGE\Archaic\obj\Release\Archaic.pdb

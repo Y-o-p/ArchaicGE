@@ -2,7 +2,7 @@
  *	This is the most important file in this solution made in an OpenGL style.
  *	
  *	This class will take in vertex data and then render it to the console according to the viewport size.
- *	Of course it does have other uses; like being able to render text, points, lines, and most importantly, triangles.
+ *	Of course it does have other uses; like being able to render text, points, lines, and, most importantly, triangles.
  *	
  *	Resources:
  *		For understanding the basic pipeline:
@@ -43,11 +43,13 @@ namespace Archaic
 		{
 			public Vec3 screen_pos;
 			public Vertex world_vertex;
+            public float brightness;
 
-			public VertexShaderData(Vec3 screen_pos, Vertex world_vertex)
+			public VertexShaderData(Vec3 screen_pos, Vertex world_vertex, float brightness = 13)
 			{
 				this.screen_pos = screen_pos;
 				this.world_vertex = world_vertex;
+                this.brightness = brightness;
 			}
 		}
 
@@ -303,20 +305,7 @@ namespace Archaic
 					{
 						Vec3[] curr_triangle = new Vec3[3];
 
-						for (int v = 0; v < 3; v++)
-						{
-							ref Vertex vertex = ref vertex_buffer[index_buffer[i + v]];
-							Vec4 position = new Vec4(vertex.position.x, vertex.position.y, vertex.position.z, 1.0f) * final_matrix;
-
-							if ((-position.w > position.x || position.w < position.x) &&
-								(-position.w > position.y || position.w < position.y) &&
-								(-position.w > position.z || position.w < position.z))
-							{
-								goto dont_render;
-							}
-
-							curr_triangle[v] = position.normalize();
-						}
+                        float[] brights = new float[3];
 
 						Matrix normal_matrix = Matrix.matrix3x3(model_matrix);
 
@@ -327,10 +316,39 @@ namespace Archaic
 						ref Vertex o_vert_c = ref vertex_buffer[index_buffer[i + 2]];
 						Vertex vert_c = new Vertex(o_vert_c.position * model_matrix, o_vert_c.normal * normal_matrix);
 
+                        Vec3 normal_model = o_vert_a.normal * normal_matrix;
+
+                        for (int v = 0; v < 3; v++)
+						{
+							ref Vertex vertex = ref vertex_buffer[index_buffer[i + v]];
+                            Vec4 world_pos = new Vec4(vertex.position.x, vertex.position.y, vertex.position.z, 1.0f) * model_matrix;
+                            Vec4 position = new Vec4(vertex.position.x, vertex.position.y, vertex.position.z, 1.0f) * final_matrix;
+
+							if ((-position.w > position.x || position.w < position.x) &&
+								(-position.w > position.y || position.w < position.y) &&
+								(-position.w > position.z || position.w < position.z))
+							{
+								goto dont_render;
+							}
+
+                            Vec3 position3v = new Vec3(world_pos.x, world_pos.y, world_pos.z);
+                            float final_brightness = 0.0f;
+                            foreach (var light in light_sources)
+                            {
+                                Vec3 light_distance = Vec3.normalize(light.position - position3v);
+
+                                final_brightness += Math.Max(Vec3.dot(Vec3.normalize(normal_model), light_distance), 0);
+                            }
+
+                            brights[v] = final_brightness;
+                            curr_triangle[v] = position.normalize();
+						}
+
+
 						triangle(
-							new VertexShaderData(viewport_transformation(curr_triangle[0]), vert_a),
-							new VertexShaderData(viewport_transformation(curr_triangle[1]), vert_b),
-							new VertexShaderData(viewport_transformation(curr_triangle[2]), vert_c));
+							new VertexShaderData(viewport_transformation(curr_triangle[0]), vert_a, brights[0]),
+							new VertexShaderData(viewport_transformation(curr_triangle[1]), vert_b, brights[1]),
+							new VertexShaderData(viewport_transformation(curr_triangle[2]), vert_c, brights[2]));
 
 						dont_render:;
 					}
@@ -367,7 +385,7 @@ namespace Archaic
 			};
 			sort_vertices(ref data);
 
-			if (data[1].screen_pos.y == data[2].screen_pos.y)
+            if (data[1].screen_pos.y == data[2].screen_pos.y)
 			{
 				flat_bottom(data[0], data[1], data[2]);
 			}
@@ -396,13 +414,11 @@ namespace Archaic
 					b_coords.x * data[0].world_vertex.position.z + b_coords.y * data[1].world_vertex.position.z + b_coords.z * data[2].world_vertex.position.z
 				);
 
-				vert_d.world_vertex.normal = new Vec3(
-					b_coords.x * data[0].world_vertex.normal.x + b_coords.y * data[1].world_vertex.normal.x + b_coords.z * data[2].world_vertex.normal.x,
-					b_coords.x * data[0].world_vertex.normal.y + b_coords.y * data[1].world_vertex.normal.y + b_coords.z * data[2].world_vertex.normal.y,
-					b_coords.x * data[0].world_vertex.normal.z + b_coords.y * data[1].world_vertex.normal.z + b_coords.z * data[2].world_vertex.normal.z
-				);
+                vert_d.world_vertex.normal = data[0].world_vertex.normal;
 
-				flat_bottom(data[0], data[1], vert_d);
+                vert_d.brightness = b_coords.x * data[0].brightness + b_coords.y * data[1].brightness + b_coords.z * data[2].brightness;
+
+                flat_bottom(data[0], data[1], vert_d);
 				flat_top(data[1], vert_d, data[2]);
 			}
 		}
@@ -425,56 +441,42 @@ namespace Archaic
 		/// </summary>
 		/// <param name="vert_a"></param>
 		/// <param name="x_b"></param>
-		private static void horizontal_line(float x_a, float x_b, int y, FragmentShaderData data)
+		private static void horizontal_line(int x_a, int x_b, int y, FragmentShaderData data, float[] brights)
 		{
-			int i_min_x = (int)x_a;
-			int i_max_x = (int)x_b;
-
-			// Fill convention for X
-			int min_x = x_a <= i_min_x + 0.5f ? i_min_x : i_min_x + 1;
-			int max_x = x_b > i_max_x + 0.5f ? i_max_x : i_max_x - 1;
-
 			Vec2 s_a = new Vec2(data.screen_a.x, data.screen_a.y);
 			Vec2 s_b = new Vec2(data.screen_b.x, data.screen_b.y);
 			Vec2 s_c = new Vec2(data.screen_c.x, data.screen_c.y);
 
-			for (int x = min_x; x <= max_x; x++)
+			for (int x = x_a; x < x_b; x++)
 			{
-				Vec3 b_coords = barycentric(new Vec2(x, y), s_a, s_b, s_c);
+				//Vec3 b_coords = barycentric(new Vec2(x, y), s_a, s_b, s_c);
 
-				float z = b_coords.x * data.screen_a.z + b_coords.y * data.screen_b.z + b_coords.z * data.screen_c.z;
+				//float z = b_coords.x * data.screen_a.z + b_coords.y * data.screen_b.z + b_coords.z * data.screen_c.z;
 
-				Vec3 position = new Vec3(
+				/*Vec3 position = new Vec3(
 					b_coords.x * data.vert_a.position.x + b_coords.y * data.vert_b.position.x + b_coords.z * data.vert_c.position.x,
 					b_coords.x * data.vert_a.position.y + b_coords.y * data.vert_b.position.y + b_coords.z * data.vert_c.position.y,
 					b_coords.x * data.vert_a.position.z + b_coords.y * data.vert_b.position.z + b_coords.z * data.vert_c.position.z
-				);
+				);*/
 
-				Vec3 normal = new Vec3(
+                /*Vec3 normal = new Vec3(
 					b_coords.x * data.vert_a.normal.x + b_coords.y * data.vert_b.normal.x + b_coords.z * data.vert_c.normal.x,
 					b_coords.x * data.vert_a.normal.y + b_coords.y * data.vert_b.normal.y + b_coords.z * data.vert_c.normal.y,
 					b_coords.x * data.vert_a.normal.z + b_coords.y * data.vert_b.normal.z + b_coords.z * data.vert_c.normal.z
-				);
+				);*/
 
-				int z_buffer_pos = x + y * viewport_width;
+                int z_buffer_pos = x + y * viewport_width;
 				if (x >= 0 && y >= 0 && x < viewport_width && y < viewport_height)
 				{
-					if (z < z_buffer[z_buffer_pos])
+                    /*if (z < z_buffer[z_buffer_pos])
 					{
-						float final_brightness = 0.0f;
-						foreach (var light in light_sources)
-						{
-							Vec3 light_distance = light.position - position;
-
-							final_brightness += Math.Max(Vec3.dot(Vec3.normalize(normal), Vec3.normalize(light_distance)), 0.0f);
-						}
-
-						final_brightness = Math.Max(final_brightness, ambient_brightness);
+                        float brightness = b_coords.x * brights[0] + b_coords.y * brights[1] + b_coords.z * brights[2];
 
 						z_buffer[z_buffer_pos] = z;
-						point(x, y, Lighting.get_brightness((byte)(final_brightness * 74.0f)));
-					}
-				}
+						point(x, y, Lighting.get_brightness((byte)(Math.Max(brightness * 10.0f, 0.0f))));
+					}*/
+                    point(x, y, Lighting.get_brightness((byte)(Math.Max(10.0f * 10.0f, 0.0f))));
+                }
 			}
 		}
 
@@ -495,40 +497,25 @@ namespace Archaic
 				vert_c = temp;
 			}
 
-			// Calculate Y
-			int i_min_y = (int)vert_a.screen_pos.y;
-			int i_max_y = (int)vert_c.screen_pos.y;
+            // Calculate Y
+            int min_y = (int)Math.Ceiling(vert_a.screen_pos.y - 0.5f);
+			int max_y = (int)Math.Ceiling(vert_c.screen_pos.y - 0.5f);
 
-			int min_y = i_min_y;
-			int max_y = i_max_y;
+            // Calculate inverse slope
+            float invslope_a = safe_divide(vert_b.screen_pos.x - vert_a.screen_pos.x, vert_b.screen_pos.y - vert_a.screen_pos.y);
+			float invslope_b = safe_divide(vert_c.screen_pos.x - vert_a.screen_pos.x, vert_c.screen_pos.y - vert_a.screen_pos.y);
 
-			// Calculate X
-			float delta_x_a = safe_divide(vert_b.screen_pos.x - vert_a.screen_pos.x, i_max_y - i_min_y);
-			float delta_x_b = safe_divide(vert_c.screen_pos.x - vert_a.screen_pos.x, i_max_y - i_min_y);
-
-			float x_a = vert_a.screen_pos.x;
-			float x_b = vert_a.screen_pos.x;
-
-			// Fill convention for Y
-			if (vert_a.screen_pos.y > i_min_y + 0.5f)
+			for (int y = min_y; y < max_y; y++)
 			{
-				min_y++;
-				x_a += delta_x_a;
-				x_b += delta_x_b;
-			}
+			    float x_a = invslope_a * ((float)y + 0.5f - vert_a.screen_pos.y) + vert_a.screen_pos.x;
+			    float x_b = invslope_b * ((float)y + 0.5f - vert_a.screen_pos.y) + vert_a.screen_pos.x;
 
-			if (vert_b.screen_pos.y <= i_max_y + 0.5f)
-			{
-				max_y--;
-			}
+                int min_x = (int)Math.Ceiling(x_a - 0.5f);
+                int max_x = (int)Math.Ceiling(x_b - 0.5f);
 
-			for (int y = min_y; y <= max_y; y++)
-			{
-				horizontal_line(x_a, x_b, y, new FragmentShaderData(vert_a.world_vertex, vert_b.world_vertex, vert_c.world_vertex,
-																	vert_a.screen_pos, vert_b.screen_pos, vert_c.screen_pos));
-
-				x_a += delta_x_a;
-				x_b += delta_x_b;
+                horizontal_line(min_x, max_x, y, new FragmentShaderData(vert_a.world_vertex, vert_b.world_vertex, vert_c.world_vertex,
+																	vert_a.screen_pos, vert_b.screen_pos, vert_c.screen_pos),
+                                                                    new float[3] { vert_a.brightness, vert_b.brightness, vert_c.brightness });
 			}
 		}
 
@@ -550,39 +537,24 @@ namespace Archaic
 			}
 
 			// Calculate Y
-			int i_min_y = (int)vert_c.screen_pos.y;
-			int i_max_y = (int)vert_a.screen_pos.y;
+			int min_y = (int)Math.Ceiling(vert_a.screen_pos.y - 0.5f);
+			int max_y = (int)Math.Ceiling(vert_c.screen_pos.y - 0.5f);
 
-			int min_y = i_min_y;
-			int max_y = i_max_y;
+			// Calculate inverse slope
+			float invslope_a = safe_divide(vert_c.screen_pos.x - vert_a.screen_pos.x, vert_c.screen_pos.y - vert_a.screen_pos.y);
+			float invslope_b = safe_divide(vert_c.screen_pos.x - vert_b.screen_pos.x, vert_c.screen_pos.y - vert_b.screen_pos.y);
 
-			// Calculate X
-			float delta_x_a = safe_divide(vert_c.screen_pos.x - vert_a.screen_pos.x, i_min_y - i_max_y);
-			float delta_x_b = safe_divide(vert_c.screen_pos.x - vert_b.screen_pos.x, i_min_y - i_max_y);
-
-			float x_a = vert_c.screen_pos.x;
-			float x_b = vert_c.screen_pos.x;
-
-			// Fill convention for Y
-			if (vert_c.screen_pos.y <= i_min_y + 0.5f)
+			for (int y = min_y; y < max_y; y++)
 			{
-				min_y--;
-				x_a -= delta_x_a;
-				x_b -= delta_x_b;
-			}
+                float x_a = invslope_a * ((float)y + 0.5f - vert_a.screen_pos.y) + vert_a.screen_pos.x;
+                float x_b = invslope_b * ((float)y + 0.5f - vert_b.screen_pos.y) + vert_b.screen_pos.x;
 
-			if (vert_a.screen_pos.y > i_max_y + 0.5f)
-			{
-				max_y++;
-			}
+                int min_x = (int)Math.Ceiling(x_a - 0.5f);
+                int max_x = (int)Math.Ceiling(x_b - 0.5f);
 
-			for (int y = min_y; y >= max_y; y--)
-			{
-				horizontal_line(x_a, x_b, y, new FragmentShaderData(vert_a.world_vertex, vert_b.world_vertex, vert_c.world_vertex,
-																	vert_a.screen_pos, vert_b.screen_pos, vert_c.screen_pos));
-
-				x_a -= delta_x_a;
-				x_b -= delta_x_b;
+                horizontal_line(min_x, max_x, y, new FragmentShaderData(vert_a.world_vertex, vert_b.world_vertex, vert_c.world_vertex,
+																	vert_a.screen_pos, vert_b.screen_pos, vert_c.screen_pos),
+                                                                    new float[3] { vert_a.brightness, vert_b.brightness, vert_c.brightness });
 			}
 		}
 

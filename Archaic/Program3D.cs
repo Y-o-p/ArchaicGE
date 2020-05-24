@@ -34,7 +34,7 @@ namespace Archaic
 			Input input = new Input();
 			ResourceRetriever resources = new ResourceRetriever();
 
-			Vec2 window_size = new Vec2(600, 180);
+			Vec2 window_size = new Vec2(300, 80);
             init((int)window_size.x, (int)window_size.y);
 
 			camera_3D.set_position(new Vec3(0.0f, 0.0f, 8.0f));
@@ -45,14 +45,19 @@ namespace Archaic
 			Mesh cube = new Mesh(resources.read_mesh("cube.obj"));
 			Mesh monkey = new Mesh(resources.read_mesh("monkeyboi.obj"));
 			Mesh triangle = new Mesh(resources.read_mesh("triangle.obj"));
+            Mesh plane = new Mesh(resources.read_mesh("plane.obj"));
 
 			cube.set_position(new Vec3(-5.0f, 0.0f, 0.0f));
-			monkey.set_position(new Vec3(0.0f, 0.0f, 0.0f));
-			triangle.set_position(new Vec3(5.0f, 0.0f, 0.0f));
+            monkey.set_position(new Vec3(0.0f, 0.0f, 0.0f));
+            monkey.set_rotation(new Vec3(0.0f, 0.0f, 0.0f));
+            triangle.set_position(new Vec3(5.0f, 0.0f, 0.0f));
+            plane.set_position(new Vec3(0.0f, 0.0f, 0.0f));
 
-			Diffuse light1 = new Diffuse(new Vec3(0.0f, 1.0f, 1.0f), 1.0f);
+            Diffuse light1 = new Diffuse(new Vec3(0.0f, 0.0f, 1.5f), 1.0f);
+            Mesh light_mesh = new Mesh(resources.read_mesh("cube.obj"));
+            light_mesh.set_scale(new Vec3(0.2f, 0.2f, 0.2f));
 
-			bool pause = true;
+            bool pause = false;
 
 			while (true)
             {
@@ -62,7 +67,8 @@ namespace Archaic
 				{
 					cube.set_rotation(cube.get_rotation() + new Vec3(delta_time * 0.3f, 0.0f, 0.0f));
 					monkey.set_rotation(monkey.get_rotation() + new Vec3(0.0f, delta_time * 0.3f, 0.0f));
-					triangle.set_rotation(triangle.get_rotation() + new Vec3(0.0f, 0.0f, delta_time * 0.3f));
+                    plane.set_rotation(monkey.get_rotation() + new Vec3(0.0f, delta_time * 0.3f, 0.0f));
+                    triangle.set_rotation(triangle.get_rotation() + new Vec3(0.0f, 0.0f, delta_time * 0.3f));
 				}
 
 				camera_3D.update();
@@ -71,36 +77,68 @@ namespace Archaic
 
 				renderer.start();
 
-				renderer.render(cube);
-				renderer.render(monkey);
-				renderer.render(triangle);
+                light_mesh.set_position(light1.position);
 
-				input.update();
+                renderer.render(cube);
+                //renderer.render(plane);
+                //renderer.render(light_mesh);
+                renderer.render(monkey);
+                renderer.render(triangle);
+                //Rasterizer.point(0, 2, (byte)'A');
+                //Rasterizer.point(0, 3, (byte)'B');
 
-				float speed = 2.0f * delta_time;
+                input.update();
 
-				if (input.key_down(ConsoleKey.W))
+				float speed = 4.0f * delta_time;
+
+                if (input.key_down(ConsoleKey.Y))
+                {
+                    light1.position.y += speed;
+                }
+
+                if (input.key_down(ConsoleKey.G))
+                {
+                    light1.position.x -= speed;
+                }
+
+                if (input.key_down(ConsoleKey.H))
+                {
+                    light1.position.y -= speed;
+                }
+
+                if (input.key_down(ConsoleKey.J))
+                {
+                    light1.position.x += speed;
+                }
+
+                if (input.key_down(ConsoleKey.I))
+                {
+                    light1.position.z += speed;
+                }
+
+                if (input.key_down(ConsoleKey.K))
+                {
+                    light1.position.z -= speed;
+                }
+
+                if (input.key_down(ConsoleKey.W))
 				{
 					camera_3D.set_position(camera_3D.get_position() + new Vec3(0.0f, speed, 0.0f));
-					//light1.position.y += speed;
 				}
 
 				if (input.key_down(ConsoleKey.A))
 				{
 					camera_3D.set_position(camera_3D.get_position() + new Vec3(-speed, 0.0f, 0.0f));
-					//light1.position.x -= speed;
 				}
 
 				if (input.key_down(ConsoleKey.S))
 				{
 					camera_3D.set_position(camera_3D.get_position() + new Vec3(0.0f, -speed, 0.0f));
-					//light1.position.y -= speed;
 				}
 
 				if (input.key_down(ConsoleKey.D))
 				{
 					camera_3D.set_position(camera_3D.get_position() + new Vec3(speed, 0.0f, 0.0f));
-					//light1.position.x += speed;
 				}
 
 				if (input.key_down(ConsoleKey.Q))
@@ -140,7 +178,7 @@ namespace Archaic
 
 				if (input.key_down(ConsoleKey.Y))
 				{
-					pause = false;
+					//pause = false;
 				}
 
 				float fps = time.get_fps();
