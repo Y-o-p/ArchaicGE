@@ -4,8 +4,6 @@ ArchaicGE is a game engine in C# that uses the console to create two dimensional
 ## Getting Started
 In the repository there are examples. ```Program3D.cs``` is the default example. There is also a 2D example if you uncomment ```Program2D.cs``` and comment out the other example.
 
-I hope to put up a wiki soon.
-
 ## Features
 * 3D rendering
 * 2D rendering
@@ -14,15 +12,6 @@ I hope to put up a wiki soon.
 * Diffuse lighting
 
 \* The current input class relies on the ```Console.ReadKey(bool)``` method which means that there is no way to detect if a key has been pressed, released, or held. There is no mouse input.
-
-## Future Features
-* Specular lighting(\*)
-* Sound engine
-* Better input class(\**)
-
-\* Face lighting, vertex lighting, per-pixel lighting.
-
-\** Possibly using Windows's global keyboard/mouse hooks.
 
 ## License
 This project is created under the MIT license; refer to [LICENSE](LICENSE) for more information.
