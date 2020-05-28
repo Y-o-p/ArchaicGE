@@ -121,7 +121,6 @@ namespace Archaic
 
 		// Buffers
 		private static Vertex[] vertex_buffer;
-		private static ushort[] index_buffer;
 
 		private static Lighting.Diffuse[] light_sources;
 
@@ -136,15 +135,6 @@ namespace Archaic
 		public static void bind_vertex_buffer(Vertex[] buffer)
 		{
 			vertex_buffer = buffer;
-		}
-
-		/// <summary>
-		/// Binds indices to draw vertices in a specific order
-		/// </summary>
-		/// <param name="buffer"></param>
-		public static void bind_index_buffer(ushort[] buffer)
-		{
-			index_buffer = buffer;
 		}
 
 		/// <summary>
@@ -298,74 +288,57 @@ namespace Archaic
 		{
 			if (vertex_buffer != null)
 			{
-				if (index_buffer != null)
+				var final_matrix = projection_matrix * camera_matrix * model_matrix;
+				for (int i = 0; i + 3 <= count; i += 3)
 				{
-					var final_matrix = projection_matrix * camera_matrix * model_matrix;
-					for (int i = 0; i + 3 <= count; i += 3)
+					Vec3[] curr_triangle = new Vec3[3];
+
+					float[] brights = new float[3];
+
+					Matrix normal_matrix = Matrix.matrix3x3(model_matrix);
+
+					ref Vertex o_vert_a = ref vertex_buffer[i];
+					Vertex vert_a = new Vertex(o_vert_a.position * model_matrix, o_vert_a.normal * normal_matrix);
+					ref Vertex o_vert_b = ref vertex_buffer[i + 1];
+					Vertex vert_b = new Vertex(o_vert_b.position * model_matrix, o_vert_b.normal * normal_matrix);
+					ref Vertex o_vert_c = ref vertex_buffer[i + 2];
+					Vertex vert_c = new Vertex(o_vert_c.position * model_matrix, o_vert_c.normal * normal_matrix);
+
+					Vec3 normal_model = o_vert_a.normal * normal_matrix;
+
+					for (int v = 0; v < 3; v++)
 					{
-						Vec3[] curr_triangle = new Vec3[3];
+						ref Vertex vertex = ref vertex_buffer[i + v];
+						Vec4 world_pos = new Vec4(vertex.position.x, vertex.position.y, vertex.position.z, 1.0f) * model_matrix;
+						Vec4 position = new Vec4(vertex.position.x, vertex.position.y, vertex.position.z, 1.0f) * final_matrix;
 
-                        float[] brights = new float[3];
-
-						Matrix normal_matrix = Matrix.matrix3x3(model_matrix);
-
-						ref Vertex o_vert_a = ref vertex_buffer[index_buffer[i]];
-						Vertex vert_a = new Vertex(o_vert_a.position * model_matrix, o_vert_a.normal * normal_matrix);
-						ref Vertex o_vert_b = ref vertex_buffer[index_buffer[i + 1]];
-						Vertex vert_b = new Vertex(o_vert_b.position * model_matrix, o_vert_b.normal * normal_matrix);
-						ref Vertex o_vert_c = ref vertex_buffer[index_buffer[i + 2]];
-						Vertex vert_c = new Vertex(o_vert_c.position * model_matrix, o_vert_c.normal * normal_matrix);
-
-                        Vec3 normal_model = o_vert_a.normal * normal_matrix;
-
-                        for (int v = 0; v < 3; v++)
+						if ((-position.w > position.x || position.w < position.x) &&
+							(-position.w > position.y || position.w < position.y) &&
+							(-position.w > position.z || position.w < position.z))
 						{
-							ref Vertex vertex = ref vertex_buffer[index_buffer[i + v]];
-                            Vec4 world_pos = new Vec4(vertex.position.x, vertex.position.y, vertex.position.z, 1.0f) * model_matrix;
-                            Vec4 position = new Vec4(vertex.position.x, vertex.position.y, vertex.position.z, 1.0f) * final_matrix;
-
-							if ((-position.w > position.x || position.w < position.x) &&
-								(-position.w > position.y || position.w < position.y) &&
-								(-position.w > position.z || position.w < position.z))
-							{
-								goto dont_render;
-							}
-
-                            Vec3 position3v = new Vec3(world_pos.x, world_pos.y, world_pos.z);
-                            float final_brightness = 0.0f;
-                            foreach (var light in light_sources)
-                            {
-                                Vec3 light_distance = Vec3.normalize(light.position - position3v);
-
-                                final_brightness += Math.Max(Vec3.dot(Vec3.normalize(normal_model), light_distance), 0);
-                            }
-
-                            brights[v] = final_brightness;
-                            curr_triangle[v] = position.normalize();
+							goto dont_render;
 						}
 
+						Vec3 position3v = new Vec3(world_pos.x, world_pos.y, world_pos.z);
+						float final_brightness = 0.0f;
+						foreach (var light in light_sources)
+						{
+							Vec3 light_distance = Vec3.normalize(light.position - position3v);
 
-						triangle(
-							new VertexShaderData(viewport_transformation(curr_triangle[0]), vert_a, brights[0]),
-							new VertexShaderData(viewport_transformation(curr_triangle[1]), vert_b, brights[1]),
-							new VertexShaderData(viewport_transformation(curr_triangle[2]), vert_c, brights[2]));
+							final_brightness += Math.Max(Vec3.dot(Vec3.normalize(normal_model), light_distance), 0);
+						}
 
-						dont_render:;
+						brights[v] = final_brightness;
+						curr_triangle[v] = position.normalize();
 					}
-				}
-				else
-				{
-					/*for (int i = 0; i + 3 <= count; i += 3)
-					{
-						Vec4 vert_a = vertex_buffer[i].position;
-						Vec4 vert_b = vertex_buffer[i + 1].position;
-						Vec4 vert_c = vertex_buffer[i + 2].position;
 
-						triangle(
-							new Vec2(vert_a.x, vert_a.y),
-							new Vec2(vert_b.x, vert_b.y),
-							new Vec2(vert_c.x, vert_c.y));
-					}*/
+
+					triangle(
+						new VertexShaderData(viewport_transformation(curr_triangle[0]), vert_a, brights[0]),
+						new VertexShaderData(viewport_transformation(curr_triangle[1]), vert_b, brights[1]),
+						new VertexShaderData(viewport_transformation(curr_triangle[2]), vert_c, brights[2]));
+
+				dont_render:;
 				}
 			}
 		}

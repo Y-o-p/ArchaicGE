@@ -12,17 +12,20 @@ namespace Archaic
 		class Vertex3D
 		{
 			public Vec3 position;
+			public Vec2 uv;
 			public Vec3 normal;
 
-			public Vertex3D(Vec3 position, Vec3 normal)
+			public Vertex3D(Vec3 position, Vec2 uv, Vec3 normal)
 			{
 				this.position = position;
+				this.uv = uv;
 				this.normal = normal;
 			}
 
 			public Vertex3D()
 			{
 				position = new Vec3(0.0f, 0.0f, 0.0f);
+				uv = new Vec2(0.0f, 0.0f);
 				normal = new Vec3(0.0f, 0.0f, 0.0f);
 			}
 		}
@@ -42,13 +45,11 @@ namespace Archaic
 		struct MeshData
 		{
 			public Vertex3D[] vertices;
-			public ushort[] indices;
 
 			// New constructor
-			public MeshData(Vertex3D[] vertex_data, ushort[] indices)
+			public MeshData(Vertex3D[] vertex_data)
 			{
 				vertices = vertex_data;
-				this.indices = indices;
 			}
 
 			public MeshData copy()
@@ -66,13 +67,7 @@ namespace Archaic
 					copy_vertices[i].normal.z = vertices[i].normal.z;
 				}
 
-				var copy_indices = new ushort[indices.Length];
-				for (int i = 0; i < indices.Length; i++)
-				{
-					copy_indices[i] = indices[i];
-				}
-
-				return new MeshData(copy_vertices, copy_indices);
+				return new MeshData(copy_vertices);
 			}
 		}
 

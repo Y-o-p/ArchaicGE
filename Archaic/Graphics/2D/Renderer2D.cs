@@ -61,7 +61,6 @@ namespace Archaic
 		{
 			Rasterizer.bind_model_matrix(Maths.Matrix.identity());
 			Rasterizer.bind_vertex_buffer(buffer_data);
-			Rasterizer.bind_index_buffer(index_data);
 			Rasterizer.draw_data(vertex_count);
 
 			Rasterizer.flush();

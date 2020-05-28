@@ -42,19 +42,20 @@ namespace Archaic
 			Rasterizer.bind_projection_matrix(camera_3D.get_perspective_mat());
 
 			Renderer3D renderer = new Renderer3D();
-			Mesh cube = new Mesh(resources.read_mesh("cube.obj"));
-			Mesh monkey = new Mesh(resources.read_mesh("monkeyboi.obj"));
-			Mesh triangle = new Mesh(resources.read_mesh("triangle.obj"));
-            Mesh plane = new Mesh(resources.read_mesh("plane.obj"));
+			Mesh cube = new Mesh(resources.read_mesh("cube2.obj"));
+			//Mesh dragon = new Mesh(resources.read_mesh("dragon.obj"));
+			//Mesh monkey = new Mesh(resources.read_mesh("monkeyboi.obj"));
+			//Mesh triangle = new Mesh(resources.read_mesh("triangle.obj"));
+            //Mesh plane = new Mesh(resources.read_mesh("plane.obj"));
 
 			cube.set_position(new Vec3(-5.0f, 0.0f, 0.0f));
-            monkey.set_position(new Vec3(0.0f, 0.0f, 0.0f));
-            monkey.set_rotation(new Vec3(0.0f, 0.0f, 0.0f));
-            triangle.set_position(new Vec3(5.0f, 0.0f, 0.0f));
-            plane.set_position(new Vec3(0.0f, 0.0f, 0.0f));
+            //monkey.set_position(new Vec3(0.0f, 0.0f, 0.0f));
+            //monkey.set_rotation(new Vec3(0.0f, 0.0f, 0.0f));
+            //triangle.set_position(new Vec3(5.0f, 0.0f, 0.0f));
+            //plane.set_position(new Vec3(0.0f, 0.0f, 0.0f));
 
             Diffuse light1 = new Diffuse(new Vec3(0.0f, 0.0f, 1.5f), 1.0f);
-            Mesh light_mesh = new Mesh(resources.read_mesh("cube.obj"));
+            Mesh light_mesh = new Mesh(resources.read_mesh("cube2.obj"));
             light_mesh.set_scale(new Vec3(0.2f, 0.2f, 0.2f));
 
             bool pause = false;
@@ -66,9 +67,9 @@ namespace Archaic
 				if (!pause)
 				{
 					cube.set_rotation(cube.get_rotation() + new Vec3(delta_time * 0.3f, 0.0f, 0.0f));
-					monkey.set_rotation(monkey.get_rotation() + new Vec3(0.0f, delta_time * 0.3f, 0.0f));
-                    plane.set_rotation(monkey.get_rotation() + new Vec3(0.0f, delta_time * 0.3f, 0.0f));
-                    triangle.set_rotation(triangle.get_rotation() + new Vec3(0.0f, 0.0f, delta_time * 0.3f));
+					//monkey.set_rotation(monkey.get_rotation() + new Vec3(0.0f, delta_time * 0.3f, 0.0f));
+                    //plane.set_rotation(monkey.get_rotation() + new Vec3(0.0f, delta_time * 0.3f, 0.0f));
+                    //triangle.set_rotation(triangle.get_rotation() + new Vec3(0.0f, 0.0f, delta_time * 0.3f));
 				}
 
 				camera_3D.update();
@@ -80,10 +81,11 @@ namespace Archaic
                 light_mesh.set_position(light1.position);
 
                 renderer.render(cube);
+				//renderer.render(dragon);
                 //renderer.render(plane);
                 //renderer.render(light_mesh);
-                renderer.render(monkey);
-                renderer.render(triangle);
+                //renderer.render(monkey);
+                //renderer.render(triangle);
                 //Rasterizer.point(0, 2, (byte)'A');
                 //Rasterizer.point(0, 3, (byte)'B');
 

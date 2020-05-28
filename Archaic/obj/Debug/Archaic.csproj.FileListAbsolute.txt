@@ -12,3 +12,10 @@ C:\Users\Jesse\Documents\cs_projects\ArchaicGE\Archaic\obj\Debug\Archaic.csprojA
 C:\Users\Jesse\Documents\cs_projects\ArchaicGE\Archaic\obj\Debug\Archaic.csproj.CoreCompileInputs.cache
 C:\Users\Jesse\Documents\cs_projects\ArchaicGE\Archaic\obj\Debug\Archaic.exe
 C:\Users\Jesse\Documents\cs_projects\ArchaicGE\Archaic\obj\Debug\Archaic.pdb
+C:\Users\Jesse\OneDrive\Documents\cs_projects\ArchaicGE\Archaic\bin\Debug\Archaic.exe.config
+C:\Users\Jesse\OneDrive\Documents\cs_projects\ArchaicGE\Archaic\bin\Debug\Archaic.exe
+C:\Users\Jesse\OneDrive\Documents\cs_projects\ArchaicGE\Archaic\bin\Debug\Archaic.pdb
+C:\Users\Jesse\OneDrive\Documents\cs_projects\ArchaicGE\Archaic\obj\Debug\Archaic.csprojAssemblyReference.cache
+C:\Users\Jesse\OneDrive\Documents\cs_projects\ArchaicGE\Archaic\obj\Debug\Archaic.csproj.CoreCompileInputs.cache
+C:\Users\Jesse\OneDrive\Documents\cs_projects\ArchaicGE\Archaic\obj\Debug\Archaic.exe
+C:\Users\Jesse\OneDrive\Documents\cs_projects\ArchaicGE\Archaic\obj\Debug\Archaic.pdb

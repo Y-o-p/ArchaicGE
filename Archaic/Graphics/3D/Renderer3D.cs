@@ -61,16 +61,14 @@ namespace Archaic
 			}
 
 			Rasterizer.bind_model_matrix(model);
-			Rasterizer.bind_index_buffer(mesh.data.indices);
 			Rasterizer.bind_vertex_buffer(position_buffer);
-			Rasterizer.draw_data(mesh.data.indices.Length);
+			Rasterizer.draw_data(mesh.data.vertices.Length);
 		}
 
 		public void flush()
 		{
 			Rasterizer.bind_light_sources(null);
 			Rasterizer.bind_model_matrix(null);
-			Rasterizer.bind_index_buffer(null);
 			Rasterizer.bind_vertex_buffer(null);
 
 			Rasterizer.flush();
