@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Archaic.Graphics._2D;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Archaic
 {
@@ -44,15 +45,17 @@ namespace Archaic
 			Renderer3D renderer = new Renderer3D();
 			Mesh cube = new Mesh(resources.read_mesh("cube2.obj"));
 			//Mesh dragon = new Mesh(resources.read_mesh("dragon.obj"));
-			//Mesh monkey = new Mesh(resources.read_mesh("monkeyboi.obj"));
+			Mesh monkey = new Mesh(resources.read_mesh("monkey.obj"));
 			//Mesh triangle = new Mesh(resources.read_mesh("triangle.obj"));
-            //Mesh plane = new Mesh(resources.read_mesh("plane.obj"));
+            Mesh plane = new Mesh(resources.read_mesh("plane.obj"));
+			Mesh sphere = new Mesh(resources.read_mesh("sphere.obj"));
 
-			cube.set_position(new Vec3(-5.0f, 0.0f, 0.0f));
-            //monkey.set_position(new Vec3(0.0f, 0.0f, 0.0f));
-            //monkey.set_rotation(new Vec3(0.0f, 0.0f, 0.0f));
-            //triangle.set_position(new Vec3(5.0f, 0.0f, 0.0f));
-            //plane.set_position(new Vec3(0.0f, 0.0f, 0.0f));
+			cube.set_position(new Vec3(0.0f, 0.0f, 0.0f));
+			//monkey.set_position(new Vec3(0.0f, 0.0f, 0.0f));
+			//monkey.set_rotation(new Vec3(0.0f, 0.0f, 0.0f));
+			//triangle.set_position(new Vec3(5.0f, 0.0f, 0.0f));
+			//plane.set_position(new Vec3(0.0f, 0.0f, 0.0f));
+			plane.set_rotation(new Vec3(0.0f, radians(-60.0f), 0.0f));
 
             Diffuse light1 = new Diffuse(new Vec3(0.0f, 0.0f, 1.5f), 1.0f);
             Mesh light_mesh = new Mesh(resources.read_mesh("cube2.obj"));
@@ -66,10 +69,11 @@ namespace Archaic
 
 				if (!pause)
 				{
-					cube.set_rotation(cube.get_rotation() + new Vec3(delta_time * 0.3f, 0.0f, 0.0f));
-					//monkey.set_rotation(monkey.get_rotation() + new Vec3(0.0f, delta_time * 0.3f, 0.0f));
-                    //plane.set_rotation(monkey.get_rotation() + new Vec3(0.0f, delta_time * 0.3f, 0.0f));
-                    //triangle.set_rotation(triangle.get_rotation() + new Vec3(0.0f, 0.0f, delta_time * 0.3f));
+					cube.set_rotation(cube.get_rotation() + new Vec3(0.0f, delta_time * 0.3f, 0.0f));
+					sphere.set_rotation(sphere.get_rotation() + new Vec3(0.0f, delta_time * 0.3f, 0.0f));
+					monkey.set_rotation(monkey.get_rotation() + new Vec3(0.0f, delta_time * 0.3f, 0.0f));
+					plane.set_rotation(plane.get_rotation() + new Vec3(0.0f, delta_time * 0.3f, 0.0f));
+					//triangle.set_rotation(triangle.get_rotation() + new Vec3(0.0f, 0.0f, delta_time * 0.3f));
 				}
 
 				camera_3D.update();
@@ -80,12 +84,21 @@ namespace Archaic
 
                 light_mesh.set_position(light1.position);
 
-                renderer.render(cube);
+				/*
+				for (int i = 0; i < 74; i++)
+				{
+					for (int x = 0; x < 50; x++)
+					{
+						Rasterizer.point(x, i, Lighting.get_brightness(i));
+					}
+				}*/
+                //renderer.render(cube);
 				//renderer.render(dragon);
-                //renderer.render(plane);
-                //renderer.render(light_mesh);
-                //renderer.render(monkey);
-                //renderer.render(triangle);
+				//renderer.render(plane);
+				//renderer.render(light_mesh);
+				renderer.render(monkey);
+				//renderer.render(triangle);
+				//renderer.render(sphere);
                 //Rasterizer.point(0, 2, (byte)'A');
                 //Rasterizer.point(0, 3, (byte)'B');
 

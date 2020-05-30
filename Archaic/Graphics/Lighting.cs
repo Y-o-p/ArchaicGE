@@ -15,9 +15,12 @@ namespace Archaic
 			(byte)'.',
 			(byte)'\'',
 			(byte)'`',
+			(byte)'-',
+			(byte)'_',
 			(byte)'^',
 			(byte)'\"',
 			(byte)',',
+			(byte)'*',
 			(byte)':',
 			(byte)';',
 			(byte)'I',
@@ -28,8 +31,6 @@ namespace Archaic
 			(byte)'<',
 			(byte)'~',
 			(byte)'+',
-			(byte)'_',
-			(byte)'-',
 			(byte)'?',
 			(byte)']',
 			(byte)'[',
@@ -71,7 +72,6 @@ namespace Archaic
 			(byte)'h',
 			(byte)'a',
 			(byte)'o',
-			(byte)'*',
 			(byte)'#',
 			(byte)'M',
 			(byte)'W',
@@ -104,8 +104,8 @@ namespace Archaic
 
         public static byte get_brightness(int index)
 		{
-            //return m_brightness[(int)clamp(index, 0, m_brightness.Length - 1)];
-            return m_brightness_numbered[(int)clamp(index, 0, m_brightness_numbered.Length - 1)];
+            return m_brightness[(int)clamp(index, 0, m_brightness.Length - 1)];
+            //return m_brightness_numbered[(int)clamp(index, 0, m_brightness_numbered.Length - 1)];
         }
 
 		public static int get_max_brightness()

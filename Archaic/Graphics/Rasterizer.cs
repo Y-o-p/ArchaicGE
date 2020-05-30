@@ -326,6 +326,7 @@ namespace Archaic
 							Vec3 light_distance = Vec3.normalize(light.position - position3v);
 
 							final_brightness += Math.Max(Vec3.dot(Vec3.normalize(normal_model), light_distance), 0);
+							//final_brightness += Vec3.dot(Vec3.normalize(normal_model), light_distance);
 						}
 
 						brights[v] = final_brightness;
@@ -414,17 +415,20 @@ namespace Archaic
 		/// </summary>
 		/// <param name="vert_a"></param>
 		/// <param name="x_b"></param>
-		private static void horizontal_line(int x_a, int x_b, int y, FragmentShaderData data, float[] brights)
+		private static void horizontal_line(int x_a, int x_b, float start_bright, float end_bright, int y, FragmentShaderData data, float[] brights)
 		{
 			Vec2 s_a = new Vec2(data.screen_a.x, data.screen_a.y);
 			Vec2 s_b = new Vec2(data.screen_b.x, data.screen_b.y);
 			Vec2 s_c = new Vec2(data.screen_c.x, data.screen_c.y);
 
+			int distance = x_b - x_a;
+			float curr_bright = start_bright;
+			float bright_change = safe_divide(end_bright - start_bright, distance);
 			for (int x = x_a; x < x_b; x++)
 			{
-				//Vec3 b_coords = barycentric(new Vec2(x, y), s_a, s_b, s_c);
+				Vec3 b_coords = barycentric(new Vec2(x, y), s_a, s_b, s_c);
 
-				//float z = b_coords.x * data.screen_a.z + b_coords.y * data.screen_b.z + b_coords.z * data.screen_c.z;
+				float z = b_coords.x * data.screen_a.z + b_coords.y * data.screen_b.z + b_coords.z * data.screen_c.z;
 
 				/*Vec3 position = new Vec3(
 					b_coords.x * data.vert_a.position.x + b_coords.y * data.vert_b.position.x + b_coords.z * data.vert_c.position.x,
@@ -441,14 +445,14 @@ namespace Archaic
                 int z_buffer_pos = x + y * viewport_width;
 				if (x >= 0 && y >= 0 && x < viewport_width && y < viewport_height)
 				{
-                    /*if (z < z_buffer[z_buffer_pos])
+					if (z < z_buffer[z_buffer_pos])
 					{
-                        float brightness = b_coords.x * brights[0] + b_coords.y * brights[1] + b_coords.z * brights[2];
+						//float brightness = b_coords.x * brights[0] + b_coords.y * brights[1] + b_coords.z * brights[2];
 
 						z_buffer[z_buffer_pos] = z;
-						point(x, y, Lighting.get_brightness((byte)(Math.Max(brightness * 10.0f, 0.0f))));
-					}*/
-                    point(x, y, Lighting.get_brightness((byte)(Math.Max(10.0f * 10.0f, 0.0f))));
+						point(x, y, Lighting.get_brightness((byte)(Math.Max(curr_bright * 74.0f, 2.0f))));
+						curr_bright += bright_change;
+					}
                 }
 			}
 		}
@@ -478,6 +482,11 @@ namespace Archaic
             float invslope_a = safe_divide(vert_b.screen_pos.x - vert_a.screen_pos.x, vert_b.screen_pos.y - vert_a.screen_pos.y);
 			float invslope_b = safe_divide(vert_c.screen_pos.x - vert_a.screen_pos.x, vert_c.screen_pos.y - vert_a.screen_pos.y);
 
+			float bright_slope_a = safe_divide(vert_b.brightness - vert_a.brightness, vert_b.screen_pos.y - vert_a.screen_pos.y);
+			float bright_a = vert_a.brightness;
+			float bright_slope_b = safe_divide(vert_c.brightness - vert_a.brightness, vert_c.screen_pos.y - vert_a.screen_pos.y);
+			float bright_b = vert_a.brightness;
+
 			for (int y = min_y; y < max_y; y++)
 			{
 			    float x_a = invslope_a * ((float)y + 0.5f - vert_a.screen_pos.y) + vert_a.screen_pos.x;
@@ -486,9 +495,11 @@ namespace Archaic
                 int min_x = (int)Math.Ceiling(x_a - 0.5f);
                 int max_x = (int)Math.Ceiling(x_b - 0.5f);
 
-                horizontal_line(min_x, max_x, y, new FragmentShaderData(vert_a.world_vertex, vert_b.world_vertex, vert_c.world_vertex,
+                horizontal_line(min_x, max_x, bright_a, bright_b, y, new FragmentShaderData(vert_a.world_vertex, vert_b.world_vertex, vert_c.world_vertex,
 																	vert_a.screen_pos, vert_b.screen_pos, vert_c.screen_pos),
                                                                     new float[3] { vert_a.brightness, vert_b.brightness, vert_c.brightness });
+				bright_a += bright_slope_a;
+				bright_b += bright_slope_b;
 			}
 		}
 
@@ -517,6 +528,11 @@ namespace Archaic
 			float invslope_a = safe_divide(vert_c.screen_pos.x - vert_a.screen_pos.x, vert_c.screen_pos.y - vert_a.screen_pos.y);
 			float invslope_b = safe_divide(vert_c.screen_pos.x - vert_b.screen_pos.x, vert_c.screen_pos.y - vert_b.screen_pos.y);
 
+			float bright_slope_a = safe_divide(vert_c.brightness - vert_a.brightness, vert_c.screen_pos.y - vert_a.screen_pos.y);
+			float bright_a = vert_a.brightness;
+			float bright_slope_b = safe_divide(vert_c.brightness - vert_b.brightness, vert_c.screen_pos.y - vert_b.screen_pos.y);
+			float bright_b = vert_b.brightness;
+
 			for (int y = min_y; y < max_y; y++)
 			{
                 float x_a = invslope_a * ((float)y + 0.5f - vert_a.screen_pos.y) + vert_a.screen_pos.x;
@@ -525,9 +541,12 @@ namespace Archaic
                 int min_x = (int)Math.Ceiling(x_a - 0.5f);
                 int max_x = (int)Math.Ceiling(x_b - 0.5f);
 
-                horizontal_line(min_x, max_x, y, new FragmentShaderData(vert_a.world_vertex, vert_b.world_vertex, vert_c.world_vertex,
+                horizontal_line(min_x, max_x, bright_a, bright_b, y, new FragmentShaderData(vert_a.world_vertex, vert_b.world_vertex, vert_c.world_vertex,
 																	vert_a.screen_pos, vert_b.screen_pos, vert_c.screen_pos),
                                                                     new float[3] { vert_a.brightness, vert_b.brightness, vert_c.brightness });
+
+				bright_a += bright_slope_a;
+				bright_b += bright_slope_b;
 			}
 		}
 
